@@ -19,3 +19,5 @@ docs/
 .gitmodules
 
 foundry.lock
+
+zkout/
