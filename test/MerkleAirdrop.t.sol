@@ -24,16 +24,9 @@ contract MerkleAirdropTest is ZkSyncChainChecker, Test {
     uint256 private constant AMOUNT_TO_MINT = AMOUNT_TO_CLAIM * 4;
 
     function setUp() public {
-        if (isZkSyncChain()) {
-            deployer = new DeployMerkleAirdrop();
-            (merkleAirdrop, bagelToken) = deployer.run();
-        } else {
-            bagelToken = new BagelToken();
-            merkleAirdrop = new MerkleAirdrop(Root, bagelToken);
-
-            bagelToken.mint(bagelToken.owner(), AMOUNT_TO_MINT);
-            bagelToken.transfer(address(merkleAirdrop), AMOUNT_TO_MINT);
-        }
+        // 统一使用部署脚本，避免 zkSync 环境下的合约创建问题
+        deployer = new DeployMerkleAirdrop();
+        (merkleAirdrop, bagelToken) = deployer.deployAirdrop();
 
         (user, userPrivateKey) = makeAddrAndKey("user");
         (gasPayer, ) = makeAddrAndKey("gasPayer");

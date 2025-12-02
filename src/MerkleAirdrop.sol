@@ -82,11 +82,23 @@ contract MerkleAirdrop is EIP712 {
         AIRDROP_TOKEN.safeTransfer(_account, _amount);
     }
 
+    /**
+     * @dev use EIP712 to hash the message,this function generate a DIGEST,
+     * USING OpenZepplin'EIP712 `_hashTypedDataV4` to create an EIP712 tx,
+     * what is EIP712(signature) = "\0x19\0x01" + domainSeparator + strcutHash"
+     * EIP712Domain {
+     *  string name;
+     *  string version;
+     *  uint256 chainId;
+     *  address verifyingContract;
+     * }
+     */
     function getDigest(
         address _account,
         uint256 _amount
     ) public view returns (bytes32) {
         return
+            // keccak256("\0x19\0x01" + domainSeparator + strcutHash)
             _hashTypedDataV4(
                 keccak256(
                     abi.encode(
@@ -97,6 +109,16 @@ contract MerkleAirdrop is EIP712 {
             );
     }
 
+    /**
+     * @dev use DIGEST and v, r, s to recover the signer address,
+     * By using elliptic curve mathematics, the signer's public key can
+     * be deduced from the signature.
+     * @param _v = the direct output of the ECDSA.recover function
+     * @param _r = (k * G).x mod n
+     * @param _s required(r <= n/2) to prevent malleability
+     * s = 1/k * (z[digest] + r * private-key) mod n
+     * @return bool
+     */
     function _isValidSignature(
         address _account,
         bytes32 _digest,

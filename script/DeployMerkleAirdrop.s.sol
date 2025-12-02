@@ -12,12 +12,16 @@ contract DeployMerkleAirdrop is Script {
 
     uint256 public constant AMOUNT_TO_MINT = 25 * 1e18 * 4;
 
+    // 用于真实部署（带 broadcast）
     function run() public returns (MerkleAirdrop, BagelToken) {
-        return deployAirdrop();
+        vm.startBroadcast();
+        (MerkleAirdrop merkleAirdrop, BagelToken bagelToken) = deployAirdrop();
+        vm.stopBroadcast();
+        return (merkleAirdrop, bagelToken);
     }
 
-    function deployAirdrop() internal returns (MerkleAirdrop, BagelToken) {
-        vm.startBroadcast();
+    // 用于测试（不带 broadcast，zkSync 和 EVM 都可用）
+    function deployAirdrop() public returns (MerkleAirdrop, BagelToken) {
         BagelToken bagelToken = new BagelToken();
         MerkleAirdrop merkleAirdrop = new MerkleAirdrop(
             ROOT,
@@ -25,7 +29,6 @@ contract DeployMerkleAirdrop is Script {
         );
         bagelToken.mint(bagelToken.owner(), AMOUNT_TO_MINT);
         bagelToken.transfer(address(merkleAirdrop), AMOUNT_TO_MINT);
-        vm.stopBroadcast();
 
         return (merkleAirdrop, bagelToken);
     }
